@@ -11,7 +11,11 @@ import {
   faSearchMinus,
   faSearchPlus,
   faBackward,
+  faBackwardStep,
+  faBackwardFast,
   faForward,
+  faForwardStep,
+  faForwardFast,
   faPlayCircle,
   faPauseCircle,
 } from "@fortawesome/free-solid-svg-icons";
@@ -169,14 +173,14 @@ class Annotate extends React.Component {
     wavesurfer.pause();
   }
 
-  handleForward() {
+  handleForward(e) {
     const { wavesurfer } = this.state;
-    wavesurfer.skipForward(5);
+    wavesurfer.skipForward(e);
   }
 
-  handleBackward() {
+  handleBackward(e) {
     const { wavesurfer } = this.state;
-    wavesurfer.skipBackward(5);
+    wavesurfer.skipBackward(e);
   }
 
   handleZoom(e) {
@@ -393,11 +397,31 @@ class Annotate extends React.Component {
                 <div className="row justify-content-md-center my-4">
                   <div className="col-1">
                     <IconButton
+                      icon={faBackwardStep}
+                      size="2x"
+                      title="Back 5 seconds"
+                      onClick={() => {
+                        this.handleBackward(5);
+                      }}
+                    />
+                  </div>
+                  <div className="col-1">
+                    <IconButton
                       icon={faBackward}
                       size="2x"
-                      title="Skip Backward"
+                      title="Back 30 seconds"
                       onClick={() => {
-                        this.handleBackward();
+                        this.handleBackward(30);
+                      }}
+                    />
+                  </div>
+                  <div className="col-1">
+                    <IconButton
+                      icon={faBackwardFast}
+                      size="2x"
+                      title="Back 1 minute"
+                      onClick={() => {
+                        this.handleBackward(60);
                       }}
                     />
                   </div>
@@ -425,11 +449,31 @@ class Annotate extends React.Component {
                   </div>
                   <div className="col-1">
                     <IconButton
+                      icon={faForwardStep}
+                      size="2x"
+                      title="Forward 5 seconds"
+                      onClick={() => {
+                        this.handleForward(5);
+                      }}
+                    />
+                  </div>
+                  <div className="col-1">
+                    <IconButton
                       icon={faForward}
                       size="2x"
-                      title="Skip Forward"
+                      title="Forward 30 seconds"
                       onClick={() => {
-                        this.handleForward();
+                        this.handleForward(30);
+                      }}
+                    />
+                  </div>
+                  <div className="col-1">
+                    <IconButton
+                      icon={faForwardFast}
+                      size="2x"
+                      title="Forward 1 minute"
+                      onClick={() => {
+                        this.handleForward(60);
                       }}
                     />
                   </div>
