@@ -58,9 +58,6 @@ class Annotate extends React.Component {
     this.setState({ isDataLoading: true });
     const wavesurfer = WaveSurfer.create({
       container: "#waveform",
-      barWidth: 2,
-      barHeight: 1,
-      barGap: null,
       mediaControls: false,
       plugins: [
         RegionsPlugin.create(),
@@ -395,17 +392,17 @@ class Annotate extends React.Component {
             {!isDataLoading ? (
               <div>
                 <div className="row justify-content-md-center my-4">
-                  <div className="col-1">
+                <div className="col-1">
                     <IconButton
-                      icon={faBackwardStep}
+                      icon={faBackwardFast}
                       size="2x"
-                      title="Back 5 seconds"
+                      title="Back 1 minute"
                       onClick={() => {
-                        this.handleBackward(5);
+                        this.handleBackward(60);
                       }}
                     />
                   </div>
-                  <div className="col-1">
+                <div className="col-1">
                     <IconButton
                       icon={faBackward}
                       size="2x"
@@ -417,11 +414,11 @@ class Annotate extends React.Component {
                   </div>
                   <div className="col-1">
                     <IconButton
-                      icon={faBackwardFast}
+                      icon={faBackwardStep}
                       size="2x"
-                      title="Back 1 minute"
+                      title="Back 5 seconds"
                       onClick={() => {
-                        this.handleBackward(60);
+                        this.handleBackward(5);
                       }}
                     />
                   </div>
