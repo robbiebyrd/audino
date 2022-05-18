@@ -6,7 +6,7 @@ services:
     volumes:
       - ./backend:/app/backend
       - ./backend/venv:/app/backend/venv
-      - backend_data:/root/uploads
+      - ./data:/root/uploads
     environment:
       ADMIN_USERNAME: "admin"
       ADMIN_PASSWORD: "password"
@@ -21,9 +21,6 @@ services:
     depends_on:
       - mysql
       - redis
-    networks:
-      - backend-network
-      - frontend-network
 
   frontend:
     image: node:14.18.1
@@ -36,11 +33,9 @@ services:
       - 3000:3000
     depends_on:
       - backend
-    networks:
-      - frontend-network
 
   mysql:
-    image: mysql:5.7
+    image: mariadb:10.5.8
     volumes:
       - ./mysql:/mysql
       - mysql_data:/var/lib/mysql
@@ -49,9 +44,9 @@ services:
       MYSQL_ROOT_PASSWORD: "root"
       MYSQL_USER: "audino"
       MYSQL_PASSWORD: "audino"
+    ports:
+      - 3310:3306
     command: --init-file=/mysql/create_database.sql --character-set-server=utf8mb4 --collation-server=utf8mb4_bin
-    networks:
-      - backend-network
 
   redis:
     build: ./redis
@@ -59,14 +54,8 @@ services:
       - redis_data:/data
     environment:
       REDIS_PASSWORD: "audino"
-    networks:
-      - backend-network
 
 volumes:
   mysql_data:
   redis_data:
   backend_data:
-
-networks:
-  backend-network:
-  frontend-network:
