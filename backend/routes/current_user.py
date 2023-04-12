@@ -18,17 +18,15 @@ def fetch_current_user_projects():
 
     try:
         request_user = User.query.filter_by(username=identity["username"]).first()
-        response = list(
-            [
-                {
-                    "project_id": project.id,
-                    "name": project.name,
-                    "created_by": project.creator_user.username,
-                    "created_on": project.created_at.strftime("%B %d, %Y"),
-                }
-                for project in request_user.projects
-            ]
-        )
+        response = [
+            {
+                "project_id": project.id,
+                "name": project.name,
+                "created_by": project.creator_user.username,
+                "created_on": project.created_at.strftime("%B %d, %Y"),
+            }
+            for project in request_user.projects
+        ]
     except Exception as e:
         message = "Error fetching all projects"
         app.logger.error(message)
@@ -55,16 +53,14 @@ def fetch_data_for_project(project_id):
 
         segmentations = db.session.query(Segmentation.data_id).distinct().subquery()
 
-        data = {}
-
-        data["pending"] = (
-            db.session.query(Data)
+        data = {
+            "pending": db.session.query(Data)
             .filter(Data.assigned_user_id == request_user.id)
             .filter(Data.project_id == project_id)
             .filter(Data.id.notin_(segmentations))
             .distinct()
             .order_by(Data.last_modified.desc())
-        )
+        }
 
         data["completed"] = (
             db.session.query(Data)
@@ -89,20 +85,18 @@ def fetch_data_for_project(project_id):
 
         next_page = paginated_data.next_num if paginated_data.has_next else None
         prev_page = paginated_data.prev_num if paginated_data.has_prev else None
-        response = list(
-            [
-                {
-                    "data_id": data_point.id,
-                    "filename": data_point.filename,
-                    "original_filename": data_point.original_filename,
-                    "created_on": data_point.created_at.strftime("%B %d, %Y"),
-                    "reference_transcription": data_point.reference_transcription,
-                    "is_marked_for_review": data_point.is_marked_for_review,
-                    "number_of_segmentations": len(data_point.segmentations),
-                }
-                for data_point in paginated_data.items
-            ]
-        )
+        response = [
+            {
+                "data_id": data_point.id,
+                "filename": data_point.filename,
+                "original_filename": data_point.original_filename,
+                "created_on": data_point.created_at.strftime("%B %d, %Y"),
+                "reference_transcription": data_point.reference_transcription,
+                "is_marked_for_review": data_point.is_marked_for_review,
+                "number_of_segmentations": len(data_point.segmentations),
+            }
+            for data_point in paginated_data.items
+        ]
         count_data = {key: value.count() for key, value in data.items()}
     except Exception as e:
         message = "Error fetching all data points"

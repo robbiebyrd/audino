@@ -19,10 +19,7 @@ def revoked_token_callback(decrypted_token):
     jti = decrypted_token["jti"]
     entry = redis_client.get(jti)
 
-    if entry is None:
-        return True
-
-    return entry == "true"
+    return True if entry is None else entry == "true"
 
 
 @jwt.expired_token_loader
@@ -66,7 +63,7 @@ def login():
             401,
         )
 
-    is_admin = True if user.role.role == "admin" else False
+    is_admin = user.role.role == "admin"
 
     access_token = create_access_token(
         identity={"username": username, "is_admin": is_admin, "user_id": user.id},

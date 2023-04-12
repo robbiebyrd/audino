@@ -16,9 +16,9 @@ from . import api
 def add_value_to_label(label_id):
     identity = get_jwt_identity()
     request_user = User.query.filter_by(username=identity["username"]).first()
-    is_admin = True if request_user.role.role == "admin" else False
+    is_admin = request_user.role.role == "admin"
 
-    if is_admin == False:
+    if not is_admin:
         return jsonify(message="Unauthorized access!"), 401
 
     if not request.is_json:
@@ -48,11 +48,12 @@ def add_value_to_label(label_id):
                 ),
                 409,
             )
-        app.logger.error(f"Error adding value to label")
+        app.logger.error("Error adding value to label")
         app.logger.error(e)
         return (
             jsonify(
-                message=f"Error adding value to label", type="VALUE_CREATION_FAILED"
+                message="Error adding value to label",
+                type="VALUE_CREATION_FAILED",
             ),
             500,
         )
@@ -60,7 +61,7 @@ def add_value_to_label(label_id):
     return (
         jsonify(
             value_id=label_value.id,
-            message=f"Value assigned to label",
+            message="Value assigned to label",
             type="VALUE_ASSIGNED_TO_LABEL",
         ),
         201,
@@ -72,9 +73,9 @@ def add_value_to_label(label_id):
 def get_values_for_label(label_id):
     identity = get_jwt_identity()
     request_user = User.query.filter_by(username=identity["username"]).first()
-    is_admin = True if request_user.role.role == "admin" else False
+    is_admin = request_user.role.role == "admin"
 
-    if is_admin == False:
+    if not is_admin:
         return jsonify(message="Unauthorized access!"), 401
 
     try:
@@ -100,9 +101,9 @@ def get_values_for_label(label_id):
 def fetch_label_value(label_id, label_value_id):
     identity = get_jwt_identity()
     request_user = User.query.filter_by(username=identity["username"]).first()
-    is_admin = True if request_user.role.role == "admin" else False
+    is_admin = request_user.role.role == "admin"
 
-    if is_admin == False:
+    if not is_admin:
         return jsonify(message="Unauthorized access!"), 401
 
     try:
@@ -129,9 +130,9 @@ def fetch_label_value(label_id, label_value_id):
 def update_value_for_label(label_id, label_value_id):
     identity = get_jwt_identity()
     request_user = User.query.filter_by(username=identity["username"]).first()
-    is_admin = True if request_user.role.role == "admin" else False
+    is_admin = request_user.role.role == "admin"
 
-    if is_admin == False:
+    if not is_admin:
         return jsonify(message="Unauthorized access!"), 401
 
     if not request.is_json:
