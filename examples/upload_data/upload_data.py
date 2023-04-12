@@ -73,10 +73,7 @@ response = requests.post(
     f"http://{args.host}:{args.port}/api/data", files=file, data=values, headers=headers
 )
 
-if response.status_code == 201:
-    response_json = response.json()
-    print(f"Message: {response_json['message']}")
-else:
+if response.status_code != 201:
     print(f"Error Code: {response.status_code}")
-    response_json = response.json()
-    print(f"Message: {response_json['message']}")
+response_json = response.json()
+print(f"Message: {response_json['message']}")

@@ -23,9 +23,9 @@ def generate_api_key():
 def create_project():
     identity = get_jwt_identity()
     request_user = User.query.filter_by(username=identity["username"]).first()
-    is_admin = True if request_user.role.role == "admin" else False
+    is_admin = request_user.role.role == "admin"
 
-    if is_admin == False:
+    if not is_admin:
         return jsonify(message="Unauthorized access!"), 401
 
     if not request.is_json:
@@ -67,24 +67,22 @@ def create_project():
 def fetch_all_projects():
     identity = get_jwt_identity()
     request_user = User.query.filter_by(username=identity["username"]).first()
-    is_admin = True if request_user.role.role == "admin" else False
+    is_admin = request_user.role.role == "admin"
 
-    if is_admin == False:
+    if not is_admin:
         return jsonify(message="Unauthorized access!"), 401
     try:
         projects = Project.query.all()
-        response = list(
-            [
-                {
-                    "project_id": project.id,
-                    "name": project.name,
-                    "api_key": project.api_key,
-                    "created_by": project.creator_user.username,
-                    "created_on": project.created_at.strftime("%B %d, %Y"),
-                }
-                for project in projects
-            ]
-        )
+        response = [
+            {
+                "project_id": project.id,
+                "name": project.name,
+                "api_key": project.api_key,
+                "created_by": project.creator_user.username,
+                "created_on": project.created_at.strftime("%B %d, %Y"),
+            }
+            for project in projects
+        ]
     except Exception as e:
         message = "Error fetching all projects"
         app.logger.error(message)
@@ -99,9 +97,9 @@ def fetch_all_projects():
 def fetch_project(project_id):
     identity = get_jwt_identity()
     request_user = User.query.filter_by(username=identity["username"]).first()
-    is_admin = True if request_user.role.role == "admin" else False
+    is_admin = request_user.role.role == "admin"
 
-    if is_admin == False:
+    if not is_admin:
         return jsonify(message="Unauthorized access!"), 401
 
     try:
@@ -147,9 +145,9 @@ def fetch_project(project_id):
 def update_project_users(project_id):
     identity = get_jwt_identity()
     request_user = User.query.filter_by(username=identity["username"]).first()
-    is_admin = True if request_user.role.role == "admin" else False
+    is_admin = request_user.role.role == "admin"
 
-    if is_admin == False:
+    if not is_admin:
         return jsonify(message="Unauthorized access!"), 401
 
     if not request.is_json:
@@ -167,7 +165,7 @@ def update_project_users(project_id):
         project = Project.query.get(project_id)
         # TODO: Decide whether to give creator of project access
         # project.users.append(request_user)
-        final_users = [user for user in project.users]
+        final_users = list(project.users)
         for user in project.users:
             if user.id not in users:
                 final_users.remove(user)
@@ -207,9 +205,9 @@ def update_project_users(project_id):
 def add_label_to_project(project_id):
     identity = get_jwt_identity()
     request_user = User.query.filter_by(username=identity["username"]).first()
-    is_admin = True if request_user.role.role == "admin" else False
+    is_admin = request_user.role.role == "admin"
 
-    if is_admin == False:
+    if not is_admin:
         return jsonify(message="Unauthorized access!"), 401
 
     if not request.is_json:
@@ -283,9 +281,9 @@ def add_label_to_project(project_id):
 def get_label_for_project(project_id, label_id):
     identity = get_jwt_identity()
     request_user = User.query.filter_by(username=identity["username"]).first()
-    is_admin = True if request_user.role.role == "admin" else False
+    is_admin = request_user.role.role == "admin"
 
-    if is_admin == False:
+    if not is_admin:
         return jsonify(message="Unauthorized access!"), 401
 
     try:
@@ -320,9 +318,9 @@ def get_label_for_project(project_id, label_id):
 def update_label_for_project(project_id, label_id):
     identity = get_jwt_identity()
     request_user = User.query.filter_by(username=identity["username"]).first()
-    is_admin = True if request_user.role.role == "admin" else False
+    is_admin = request_user.role.role == "admin"
 
-    if is_admin == False:
+    if not is_admin:
         return jsonify(message="Unauthorized access!"), 401
 
     if not request.is_json:
@@ -429,14 +427,7 @@ def get_segmentations_for_data(project_id, data_id):
 
         segmentations = []
         for segment in data.segmentations:
-            resp = {
-                "segmentation_id": segment.id,
-                "start_time": segment.start_time,
-                "end_time": segment.end_time,
-                "transcription": segment.transcription,
-            }
-
-            values = dict()
+            values = {}
             for value in segment.values:
                 if value.label.name not in values:
                     values[value.label.name] = {
@@ -451,8 +442,13 @@ def get_segmentations_for_data(project_id, data_id):
                 else:
                     values[value.label.name]["values"] = value.id
 
-            resp["annotations"] = values
-
+            resp = {
+                "segmentation_id": segment.id,
+                "start_time": segment.start_time,
+                "end_time": segment.end_time,
+                "transcription": segment.transcription,
+                "annotations": values,
+            }
             segmentations.append(resp)
 
         response = {
@@ -499,18 +495,15 @@ def update_data(project_id, data_id):
         db.session.commit()
         db.session.refresh(data)
     except Exception as e:
-        app.logger.error(f"Error updating data")
+        app.logger.error("Error updating data")
         app.logger.error(e)
-        return (
-            jsonify(message=f"Error updating data", type="DATA_UPDATION_FAILED"),
-            500,
-        )
+        return jsonify(message="Error updating data", type="DATA_UPDATION_FAILED"), 500
 
     return (
         jsonify(
             data_id=data.id,
             is_marked_for_review=data.is_marked_for_review,
-            message=f"Data updated",
+            message="Data updated",
             type="DATA_UPDATED",
         ),
         200,
@@ -546,7 +539,7 @@ def add_segmentations(project_id, data_id, segmentation_id=None):
         )
 
     transcription = request.json.get("transcription", None)
-    annotations = request.json.get("annotations", dict())
+    annotations = request.json.get("annotations", {})
 
     start_time = round(float(start_time), 4)
     end_time = round(float(end_time), 4)
@@ -577,11 +570,11 @@ def add_segmentations(project_id, data_id, segmentation_id=None):
         db.session.commit()
         db.session.refresh(segmentation)
     except Exception as e:
-        app.logger.error(f"Could not create segmentation")
+        app.logger.error("Could not create segmentation")
         app.logger.error(e)
         return (
             jsonify(
-                message=f"Could not create segmentation",
+                message="Could not create segmentation",
                 type="SEGMENTATION_CREATION_FAILED",
             ),
             500,
@@ -629,11 +622,11 @@ def delete_segmentations(project_id, data_id, segmentation_id):
         db.session.delete(segmentation)
         db.session.commit()
     except Exception as e:
-        app.logger.error(f"Could not delete segmentation")
+        app.logger.error("Could not delete segmentation")
         app.logger.error(e)
         return (
             jsonify(
-                message=f"Could not delete segmentation",
+                message="Could not delete segmentation",
                 type="SEGMENTATION_DELETION_FAILED",
             ),
             500,
@@ -673,7 +666,7 @@ def get_project_annotations(project_id):
             for segmentation in data.segmentations:
                 segmentation_dict = segmentation.to_dict()
 
-                values = dict()
+                values = {}
                 for value in segmentation.values:
                     if value.label.name not in values:
                         values[value.label.name] = {

@@ -29,10 +29,7 @@ def validate_segmentation(segment):
     """
     required_key = {"start_time", "end_time", "transcription"}
 
-    if set(required_key).issubset(segment.keys()):
-        return True
-    else:
-        return False
+    return set(required_key).issubset(segment.keys())
 
 
 def generate_segmentation(
@@ -164,7 +161,7 @@ def add_data():
         validated = validate_segmentation(segment)
 
         if not validated:
-            raise BadRequest(description=f"Segmentations have missing keys.")
+            raise BadRequest(description="Segmentations have missing keys.")
 
         new_segment = generate_segmentation(
             data_id=data.id,
@@ -185,7 +182,7 @@ def add_data():
     return (
         jsonify(
             data_id=data.id,
-            message=f"Data uploaded, created and assigned successfully",
+            message="Data uploaded, created and assigned successfully",
             type="DATA_CREATED",
         ),
         201,

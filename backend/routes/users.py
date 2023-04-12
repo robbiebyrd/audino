@@ -16,9 +16,9 @@ def create_user():
     # TODO: Make jwt user id based to expire user session if permissions are changed
     identity = get_jwt_identity()
     request_user = User.query.filter_by(username=identity["username"]).first()
-    is_admin = True if request_user.role.role == "admin" else False
+    is_admin = request_user.role.role == "admin"
 
-    if is_admin == False:
+    if not is_admin:
         return jsonify(message="Unauthorized access!"), 401
 
     if not request.is_json:
@@ -70,9 +70,9 @@ def create_user():
 def fetch_user(user_id):
     identity = get_jwt_identity()
     request_user = User.query.filter_by(username=identity["username"]).first()
-    is_admin = True if request_user.role.role == "admin" else False
+    is_admin = request_user.role.role == "admin"
 
-    if is_admin == False:
+    if not is_admin:
         return jsonify(message="Unauthorized access!"), 401
 
     try:
@@ -101,9 +101,9 @@ def fetch_user(user_id):
 def update_user(user_id):
     identity = get_jwt_identity()
     request_user = User.query.filter_by(username=identity["username"]).first()
-    is_admin = True if request_user.role.role == "admin" else False
+    is_admin = request_user.role.role == "admin"
 
-    if is_admin == False:
+    if not is_admin:
         return jsonify(message="Unauthorized access!"), 401
 
     if not request.is_json:
@@ -152,24 +152,22 @@ def update_user(user_id):
 def fetch_all_users():
     identity = get_jwt_identity()
     request_user = User.query.filter_by(username=identity["username"]).first()
-    is_admin = True if request_user.role.role == "admin" else False
+    is_admin = request_user.role.role == "admin"
 
-    if is_admin == False:
+    if not is_admin:
         return jsonify(message="Unauthorized access"), 401
 
     try:
         users = User.query.all()
-        response = list(
-            [
-                {
-                    "user_id": user.id,
-                    "username": user.username,
-                    "role": user.role.role.title(),
-                    "created_on": user.created_at.strftime("%B %d, %Y"),
-                }
-                for user in users
-            ]
-        )
+        response = [
+            {
+                "user_id": user.id,
+                "username": user.username,
+                "role": user.role.role.title(),
+                "created_on": user.created_at.strftime("%B %d, %Y"),
+            }
+            for user in users
+        ]
     except Exception as e:
         message = "Error fetching all users"
         app.logger.error(message)
